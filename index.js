@@ -56,9 +56,7 @@ function App() {
   //   메뉴를 입력 받는다.
   const coffeMenu = $('#espresso-menu-name')
   coffeMenu.addEventListener('keypress', e => {
-    if (e.key === 'Enter' && coffeMenu.value !== '') {
-      insertCoffeeMenu()
-    }
+    e.key === 'Enter' && coffeMenu.value !== '' && insertCoffeeMenu()
   })
   const menuButton = $('#espresso-menu-submit-button')
   menuButton.addEventListener('click', () => {
@@ -67,13 +65,10 @@ function App() {
 
   //   이벤트 위임을 통한 동적인 자식 태크에 이벤트 전달
   $('#espresso-menu-list').addEventListener('click', e => {
-    if (e.target.classList.contains('menu-edit-button')) {
-      updateCoffeeMenu(e)
-    } else if (e.target.classList.contains('menu-remove-button')) {
-      if (confirm('삭제하시겠습니까?')) {
-        removeMenuName(e)
-      }
-    }
+    e.target.classList.contains('menu-edit-button') && updateCoffeeMenu(e)
+    e.target.classList.contains('menu-remove-button') &&
+      confirm('삭제하시겠습니까?') &&
+      removeMenuName(e)
   })
 }
 App()
