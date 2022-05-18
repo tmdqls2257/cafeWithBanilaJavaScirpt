@@ -1,5 +1,27 @@
 const $ = selecter => document.querySelector(selecter)
 
+class Store {
+  constructor() {
+    this.actions = {}
+    this.mutations = {}
+    this.state = {}
+  }
+
+  dispatch(actionKey, payload) {
+    this.status = 'action'
+    this.actions[actionKey] = payload
+    console.log(this.actions)
+  }
+
+  useselector(actionKey) {
+    return {
+      payload: this.actions[actionKey],
+    }
+  }
+}
+
+const store = new Store()
+
 function App() {
   this.menu = []
   // form 태그가 자동으로 전송되는 것을 막아준다.
@@ -8,12 +30,14 @@ function App() {
     e.preventDefault()
   })
 
-  function insertCoffeeMenu() {
+  const insertCoffeeMenu = () => {
     const expressoMenuName = coffeMenu.value
     this.menu.push({ name: expressoMenuName })
+    store.dispatch('insertMenu', this.menu)
+
     const template = this.menu
-      .map(item => {
-        return `<li class="menu-list-item d-flex items-center py-2">
+      .map((item, idx) => {
+        return `<li id = '${idx}' class="menu-list-item d-flex items-center py-2">
       <span class="w-100 pl-2 menu-name">${item.name}</span>
       <button
         type="button"
@@ -42,12 +66,13 @@ function App() {
     $('.menu-count').innerText = `총 ${liCount}개`
   }
 
-  function updateCoffeeMenu(e) {
+  const updateCoffeeMenu = e => {
+    const menuId = e.target.closest('li').id
     const $menuName = e.target.closest('li').querySelector('.menu-name')
     //   가장 가까운 list의 값을 가져옵니다.
-    const menuName = $menuName.innerText
-    const updatedMenuName = prompt('메뉴를 수정하세요', menuName)
-
+    const updatedMenuName = prompt('메뉴를 수정하세요', $menuName.innerText)
+    this.menu[menuId].name = updatedMenuName
+    store.dispatch('insertMenu', this.menu)
     //   menuName에 할당해서는 안된다. menuName는 innerText값만 할당하는 것이기 때문에 수정이 되지 않는다.
     $menuName.innerText = updatedMenuName
   }
@@ -63,8 +88,8 @@ function App() {
     e.key === 'Enter' && coffeMenu.value !== '' && insertCoffeeMenu()
   })
   const menuButton = $('#espresso-menu-submit-button')
-  menuButton.addEventListener('click', e => {
-    coffeMenu.value !== '' && insertCoffeeMenu.call(this)
+  menuButton.addEventListener('click', () => {
+    coffeMenu.value !== '' && insertCoffeeMenu()
   })
 
   //   이벤트 위임을 통한 동적인 자식 태크에 이벤트 전달
