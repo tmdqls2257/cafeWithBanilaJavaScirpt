@@ -10,7 +10,6 @@ class Store {
   dispatch(actionKey, payload) {
     this.status = 'action'
     this.actions[actionKey] = payload
-    console.log(this.actions)
   }
 
   useselector(actionKey) {
@@ -23,19 +22,25 @@ class Store {
 const store = new Store()
 
 function App() {
-  this.menu = []
+  this.menu = { espresso: [], frappuccino: [], blended: [], desert: [] }
+  this.currentCategory = 'espresso'
   // form 태그가 자동으로 전송되는 것을 막아준다.
-  const menuForm = $('#espresso-menu-form')
+  const menuForm = $('#menu-form')
   menuForm.addEventListener('submit', e => {
     e.preventDefault()
   })
 
   const insertCoffeeMenu = () => {
-    const expressoMenuName = coffeMenu.value
-    this.menu.push({ name: expressoMenuName })
+    const MenuName = coffeMenu.value
+    this.menu[this.currentCategory].push({ name: MenuName })
     store.dispatch('insertMenu', this.menu)
-
-    const template = this.menu
+    render()
+    // $('#menu-list').insertAdjacentHTML('beforebegin', menuItemTemplate(MenuName))
+    coffeMenu.value = ''
+    updateMenuCount()
+  }
+  const render = () => {
+    const template = this.menu[this.currentCategory]
       .map((item, idx) => {
         return `<li id = '${idx}' class="menu-list-item d-flex items-center py-2">
       <span class="w-100 pl-2 menu-name">${item.name}</span>
@@ -54,15 +59,10 @@ function App() {
     </li>`
       })
       .join('')
-    // $('#espresso-menu-list').insertAdjacentHTML('beforebegin', menuItemTemplate(expressoMenuName))
-
-    $('#espresso-menu-list').innerHTML = template
-    coffeMenu.value = ''
-    updateMenuCount()
+    $('#menu-list').innerHTML = template
   }
-
   function updateMenuCount() {
-    const liCount = $('#espresso-menu-list').querySelectorAll('li').length
+    const liCount = $('#menu-list').querySelectorAll('li').length
     $('.menu-count').innerText = `총 ${liCount}개`
   }
 
@@ -71,34 +71,49 @@ function App() {
     const $menuName = e.target.closest('li').querySelector('.menu-name')
     //   가장 가까운 list의 값을 가져옵니다.
     const updatedMenuName = prompt('메뉴를 수정하세요', $menuName.innerText)
-    this.menu[menuId].name = updatedMenuName
+    this.menu[this.currentCategory][menuId].name = updatedMenuName
     store.dispatch('insertMenu', this.menu)
     //   menuName에 할당해서는 안된다. menuName는 innerText값만 할당하는 것이기 때문에 수정이 되지 않는다.
     $menuName.innerText = updatedMenuName
   }
 
-  function removeMenuName(e) {
+  const removeMenuName = e => {
+    const menuId = e.target.closest('li').id
+    this.menu[this.currentCategory] = this.menu[this.currentCategory].filter(
+      (_, idx) => idx !== Number(menuId)
+    )
+    store.dispatch('insertMenu', this.menu)
     e.target.closest('li').remove()
     updateMenuCount()
   }
 
   //   메뉴를 입력 받는다.
-  const coffeMenu = $('#espresso-menu-name')
+  const coffeMenu = $('#menu-name')
   coffeMenu.addEventListener('keypress', e => {
     e.key === 'Enter' && coffeMenu.value !== '' && insertCoffeeMenu()
   })
-  const menuButton = $('#espresso-menu-submit-button')
+  const menuButton = $('#menu-submit-button')
   menuButton.addEventListener('click', () => {
     coffeMenu.value !== '' && insertCoffeeMenu()
   })
 
   //   이벤트 위임을 통한 동적인 자식 태크에 이벤트 전달
-  $('#espresso-menu-list').addEventListener('click', e => {
+  $('#menu-list').addEventListener('click', e => {
     e.target.classList.contains('menu-edit-button') && updateCoffeeMenu(e)
     e.target.classList.contains('menu-remove-button') &&
       confirm('삭제하시겠습니까?') &&
       removeMenuName(e)
   })
+
+  $('nav').addEventListener('click', e => {
+    const isCategoryButton = e.target.classList.contains('cafe-category-name')
+    if (isCategoryButton) {
+      const categoryName = e.target.dataset.categoryName
+      this.currentCategory = categoryName
+      $('#category-title').innerText = `${e.target.innerText} 메뉴 관리`
+      render()
+    }
+  })
 }
+
 const app = new App()
-app
